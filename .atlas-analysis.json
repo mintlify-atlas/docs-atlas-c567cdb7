@@ -1,0 +1,61 @@
+{
+  "projectType": "cli-tool",
+  "projectName": "Timo",
+  "projectDescription": "A command-line tool to capture and search thoughts directly in your terminal.",
+  "theme": "palm",
+  "primaryColor": "#4A90E2",
+  "lightColor": "#6BA3E8",
+  "darkColor": "#2E5C8A",
+  "navigation": {
+    "groups": [
+      {
+        "group": "Get Started",
+        "pages": [
+          "introduction",
+          "installation",
+          "quickstart"
+        ]
+      },
+      {
+        "group": "Commands",
+        "pages": [
+          "commands/add",
+          "commands/list",
+          "commands/search",
+          "commands/remove",
+          "commands/clear"
+        ]
+      },
+      {
+        "group": "Guides",
+        "pages": [
+          "guides/labels",
+          "guides/configuration",
+          "guides/tips-and-tricks"
+        ]
+      },
+      {
+        "group": "Development",
+        "pages": [
+          "development/architecture",
+          "development/contributing",
+          "development/building-from-source"
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Add and manage thoughts from terminal",
+    "Search thoughts with keywords",
+    "Organize thoughts with labels",
+    "SQLite-backed persistent storage",
+    "Clean, colored terminal output"
+  ],
+  "publicApiSurface": [
+    "timo add <thought> [-l <label>]",
+    "timo list [-l <label>] [-s]",
+    "timo search <keyword> [-l <label>] [-s]",
+    "timo remove <id1> <id2> ...",
+    "timo clear --confirmed"
+  ]
+}
