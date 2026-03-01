@@ -1,0 +1,246 @@
+---
+title: "Using Labels"
+description: "Organize your thoughts with labels for easy categorization and filtering"
+---
+
+Labels help you categorize and organize your thoughts, making it easier to find related items and manage different areas of your life. Think of labels as tags that group similar thoughts together.
+
+## Why use labels?
+
+Labels are useful for:
+
+- **Context switching**: Quickly filter thoughts by work, personal, or project-specific topics
+- **Organization**: Keep related thoughts grouped together
+- **Focus**: View only the thoughts relevant to your current task
+- **Workflow management**: Separate different types of thoughts (ideas, tasks, reminders)
+
+<Tip>
+Start with a few broad categories and add more specific labels as needed. Common starting labels include: `work`, `personal`, `ideas`, and `urgent`.
+</Tip>
+
+## Adding labels to thoughts
+
+<Steps>
+  <Step title="Add a thought with a label">
+    Use the `-l` or `--label` flag when adding a new thought:
+
+    ```bash
+    timo add Buy groceries -l errands
+    ```
+
+    The label is attached to the thought and stored in the database alongside the content.
+  </Step>
+
+  <Step title="Add thoughts without labels">
+    Labels are optional. You can add thoughts without labels:
+
+    ```bash
+    timo add Remember to call mom
+    ```
+
+    This thought won't have a label but will still appear in general list and search results.
+  </Step>
+
+  <Step title="Verify your thought was added">
+    List all thoughts to see the one you just added:
+
+    ```bash
+    timo list -s
+    ```
+
+    The `-s` or `--show-labels` flag displays labels in the output with a colored tag.
+  </Step>
+</Steps>
+
+## Filtering by labels
+
+### List thoughts with a specific label
+
+View only thoughts that match a particular label:
+
+```bash
+timo list -l work
+```
+
+This displays only thoughts tagged with the `work` label.
+
+<Tabs>
+  <Tab title="Work thoughts">
+    ```bash
+    timo list -l work -s
+    ```
+    Shows all work-related thoughts with labels visible
+  </Tab>
+  <Tab title="Personal thoughts">
+    ```bash
+    timo list -l personal -s
+    ```
+    Shows all personal thoughts with labels visible
+  </Tab>
+  <Tab title="All thoughts">
+    ```bash
+    timo list -s
+    ```
+    Shows everything with labels visible
+  </Tab>
+</Tabs>
+
+### Search within a specific label
+
+Combine search keywords with label filtering:
+
+```bash
+timo search meeting -l work
+```
+
+This searches for "meeting" only within thoughts labeled as `work`.
+
+<Note>
+When you filter by label, Timo performs an exact match on the label name. The label `work` won't match thoughts labeled `Work` or `work-related`.
+</Note>
+
+## Viewing labels in output
+
+By default, labels are hidden in the output to keep things clean. Use the `-s` or `--show-labels` flag to see them:
+
+```bash
+timo list -s
+```
+
+Labels appear as colored tags next to each thought:
+
+```
+[1]: Buy groceries  #errands
+[2]: Finish report  #work
+[3]: Call dentist  #personal
+```
+
+The same flag works with search:
+
+```bash
+timo search important -s
+```
+
+## Real-world label examples
+
+<AccordionGroup>
+  <Accordion title="Work organization" icon="briefcase">
+    Separate different work contexts:
+    
+    ```bash
+    timo add Review pull requests -l code-review
+    timo add Team meeting at 2pm -l meetings
+    timo add Update documentation -l docs
+    timo add Deploy staging environment -l devops
+    ```
+    
+    Later, focus on specific work:
+    ```bash
+    timo list -l code-review
+    ```
+  </Accordion>
+
+  <Accordion title="Personal life management" icon="home">
+    Track different areas of your personal life:
+    
+    ```bash
+    timo add Buy milk and eggs -l errands
+    timo add Dentist appointment Tuesday -l health
+    timo add New project idea: recipe app -l ideas
+    timo add Pay electricity bill -l bills
+    ```
+    
+    Check what errands you need to run:
+    ```bash
+    timo list -l errands
+    ```
+  </Accordion>
+
+  <Accordion title="Project tracking" icon="folder">
+    Manage multiple projects:
+    
+    ```bash
+    timo add Implement user authentication -l project-alpha
+    timo add Design landing page mockup -l project-alpha
+    timo add Research competitor pricing -l project-beta
+    timo add Schedule client demo -l project-beta
+    ```
+    
+    Focus on one project:
+    ```bash
+    timo list -l project-alpha -s
+    ```
+  </Accordion>
+
+  <Accordion title="Priority-based workflow" icon="star">
+    Use labels to indicate priority:
+    
+    ```bash
+    timo add Fix critical production bug -l urgent
+    timo add Refactor old code -l low-priority
+    timo add Respond to client email -l urgent
+    timo add Update team wiki -l low-priority
+    ```
+    
+    Focus on urgent items:
+    ```bash
+    timo list -l urgent -s
+    ```
+  </Accordion>
+
+  <Accordion title="Learning and development" icon="book">
+    Track learning across different topics:
+    
+    ```bash
+    timo add Study Rust ownership concepts -l learning-rust
+    timo add Practice SQL joins -l learning-sql
+    timo add Read chapter 5 of design patterns book -l learning-design
+    timo add Watch conference talk on microservices -l learning-architecture
+    ```
+    
+    Review what you're learning:
+    ```bash
+    timo list -l learning-rust
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Label best practices
+
+<CardGroup cols={2}>
+  <Card title="Keep labels lowercase" icon="text-size">
+    Use lowercase for consistency: `work` instead of `Work`
+  </Card>
+  
+  <Card title="Use hyphens for multi-word labels" icon="minus">
+    Avoid spaces: `code-review` instead of `code review`
+  </Card>
+  
+  <Card title="Start broad, then specialize" icon="layer-group">
+    Begin with general categories, add specific ones as needed
+  </Card>
+  
+  <Card title="Limit the number of labels" icon="list">
+    Too many labels can become overwhelming. Start with 5-10 core labels
+  </Card>
+</CardGroup>
+
+<Tip>
+If you find yourself using the same label repeatedly, consider creating a shell alias:
+
+```bash
+alias tw="timo add -l work"
+alias tp="timo add -l personal"
+```
+
+Then simply use: `tw Finish the report`
+</Tip>
+
+## Technical implementation
+
+Labels are stored as optional string fields in the SQLite database. When you add a thought with a label, it's saved in the `tasks` table:
+
+- **Without label**: `INSERT INTO tasks (content) VALUES (?)`
+- **With label**: `INSERT INTO tasks (content, label) VALUES (?, ?)`
+
+Filtering by label uses exact string matching in SQL WHERE clauses. See the implementation in `src/sqlite/sqlite_storage.rs:60-73` for search and `src/sqlite/sqlite_storage.rs:85-95` for list operations.

@@ -1,0 +1,266 @@
+---
+title: Architecture
+description: System architecture and code organization of Timo CLI
+---
+
+## Overview
+
+Timo is a command-line application built with Rust that allows users to capture and manage thoughts directly from the terminal. The application follows a clean, layered architecture with clear separation of concerns.
+
+## Project Structure
+
+The codebase is organized into the following modules:
+
+```
+src/
+├── main.rs              # Application entry point
+├── app.rs               # Application initialization and dependency injection
+├── cli.rs               # CLI interface definition using clap
+├── commands.rs          # Command definitions (Add, List, Search, Remove, Clear)
+├── executor.rs          # Command execution orchestration
+├── task.rs              # Task domain model
+├── task_service.rs      # Business logic layer for task operations
+├── task_repository.rs   # Data access layer abstraction
+├── task_printer.rs      # Output formatting and display logic
+├── storage.rs           # Storage trait definition
+└── sqlite/
+    ├── mod.rs           # SQLite module exports
+    ├── sqlite_storage.rs # SQLite implementation of Storage trait
+    └── migration.rs     # Database migration runner
+```
+
+## Core Components
+
+### Application Entry (`main.rs`)
+
+The application entry point at `src/main.rs:1` orchestrates the initialization:
+
+1. Parses command-line arguments using the `Cli` struct
+2. Creates the `App` instance with dependency injection
+3. Delegates command execution to the `Executor`
+
+### CLI Layer (`cli.rs`, `commands.rs`)
+
+The CLI layer uses the [clap](https://docs.rs/clap/) crate with the derive API:
+
+- **`Cli`** (`src/cli.rs:5`): Top-level CLI struct that holds the subcommand
+- **`Commands`** (`src/commands.rs:3`): Enum defining all available commands:
+  - `Add`: Add a new thought with optional label
+  - `List`: Display all thoughts with optional filtering
+  - `Search`: Search thoughts by keyword with optional label filter
+  - `Remove`: Delete specific thoughts by ID
+  - `Clear`: Remove all thoughts with confirmation
+
+### Application Container (`app.rs`)
+
+The `App` struct (`src/app.rs:4`) serves as a dependency injection container:
+
+- Initializes the storage layer (currently `SqliteStorage`)
+- Loads environment variables via `dotenv`
+- Provides storage access to other components
+
+### Execution Layer (`executor.rs`)
+
+The `Executor` (`src/executor.rs:4`) is responsible for:
+
+- Bootstrapping the application
+- Creating the `TaskService` instance
+- Matching CLI commands to service methods
+- Handling command dispatch
+
+### Service Layer (`task_service.rs`)
+
+The `TaskService` (`src/task_service.rs:5`) implements business logic:
+
+- Processes raw command arguments
+- Coordinates between repository and printer
+- Handles data transformation (e.g., joining text arrays)
+- Delegates data operations to the repository
+
+### Repository Layer (`task_repository.rs`)
+
+The `TaskRepository` (`src/task_repository.rs:3`) provides data access abstraction:
+
+- Wraps the `Storage` trait implementation
+- Performs data processing (e.g., case-insensitive search)
+- Isolates business logic from storage details
+
+### Storage Layer (`storage.rs`, `sqlite/`)
+
+**Storage Trait** (`src/storage.rs:3`)
+
+Defines the storage interface with methods:
+- `add()`: Insert a new task
+- `search()`: Find tasks by content and optional label
+- `list()`: Retrieve all tasks with optional label filter
+- `delete()`: Remove a specific task by ID
+- `clear()`: Delete all tasks
+
+**SQLite Implementation** (`src/sqlite/sqlite_storage.rs:35`)
+
+The `SqliteStorage` struct implements the `Storage` trait:
+
+- Uses [rusqlite](https://docs.rs/rusqlite/) for database operations
+- Stores database in local data directory
+- Supports custom database names via `DB_NAME` environment variable
+- Implements parameterized queries for security
+
+### Presentation Layer (`task_printer.rs`)
+
+The `TaskPrinter` (`src/task_printer.rs:4`) handles output formatting:
+
+- Uses the [colored](https://docs.rs/colored/) crate for terminal styling
+- Conditionally displays labels with visual highlighting
+- Formats task output with ID and content
+
+## Data Model
+
+The `Task` struct (`src/task.rs:1`) represents a thought:
+
+```rust
+pub struct Task {
+    pub id: usize,
+    pub content: String,
+    pub label: Option<String>,
+}
+```
+
+## Database Schema
+
+Timo uses SQLite for persistent storage with the following schema:
+
+### Tasks Table
+
+```sql
+CREATE TABLE IF NOT EXISTS tasks (
+    id      INTEGER PRIMARY KEY,
+    content TEXT NOT NULL,
+    label   TEXT
+);
+```
+
+The schema is managed through migrations:
+- **V1** (`src/sql_migrations/V1__create_tasks_table.sql`): Creates the tasks table
+- **V2** (`src/sql_migrations/V2__add_label_column_in_tasks_table.sql`): Adds label column
+
+### Migration System
+
+Database migrations are handled by the [refinery](https://docs.rs/refinery/) crate:
+
+- Migrations are embedded at compile time from `src/sql_migrations/`
+- Automatically run on application startup
+- Ensure database schema is up-to-date
+
+## Data Flow
+
+The typical data flow for a command follows this pattern:
+
+```
+CLI Input → Executor → TaskService → TaskRepository → Storage → SQLite
+                                   ↓
+                              TaskPrinter → Terminal Output
+```
+
+### Example: Adding a Thought
+
+1. User runs: `timo add "Buy groceries" -l errands`
+2. `Cli::parse()` parses the command into `Commands::Add`
+3. `Executor::run()` matches the command and calls `TaskService::add_task()`
+4. `TaskService` joins the text array and calls `TaskRepository::add()`
+5. `TaskRepository` delegates to `Storage::add()`
+6. `SqliteStorage::add()` executes an INSERT query
+7. Task is persisted to the SQLite database
+
+### Example: Searching Thoughts
+
+1. User runs: `timo search meeting -l work -s`
+2. Command is parsed into `Commands::Search`
+3. `Executor` calls `TaskService::search_task()`
+4. `TaskService` joins the search key and calls `TaskRepository::search()`
+5. `TaskRepository` converts the key to lowercase and queries storage
+6. `SqliteStorage::search()` executes a SELECT with LIKE and label filter
+7. Results are returned as `Vec<Task>`
+8. `TaskService` iterates and uses `TaskPrinter` to display each task
+
+## Design Patterns
+
+### Trait-Based Abstraction
+
+The `Storage` trait provides abstraction over the persistence layer, allowing:
+- Easy testing with mock implementations
+- Potential for multiple storage backends (PostgreSQL, files, etc.)
+- Decoupling of business logic from storage details
+
+### Dependency Injection
+
+The `App` struct serves as a simple DI container:
+- Creates and manages the storage instance
+- Passed to components that need storage access
+- Enables better testability and modularity
+
+### Repository Pattern
+
+The `TaskRepository` implements the repository pattern:
+- Provides a collection-like interface to the data layer
+- Encapsulates query logic and data access
+- Allows business logic to work with domain objects
+
+### Service Layer Pattern
+
+The `TaskService` implements business logic:
+- Orchestrates between repository and presentation
+- Handles command-specific processing
+- Keeps executor thin and focused on dispatch
+
+## Dependencies
+
+Key dependencies from `Cargo.toml`:
+
+- **clap** (v4.5.6): Command-line argument parsing with derive macros
+- **rusqlite** (v0.31.0): SQLite database interface with bundled SQLite
+- **refinery** (v0.8.14): Database migration framework
+- **colored** (v2.1.0): Terminal color and styling
+- **dirs** (v5.0.1): Platform-specific directory paths
+- **dotenv** (v0.15.0): Environment variable loading
+
+## Configuration
+
+### Environment Variables
+
+- **`DB_NAME`**: Custom database filename (default: `.timo.db`)
+  - Used during development to avoid conflicts
+  - Production uses the default value
+
+### Database Location
+
+The SQLite database is stored in the platform-specific local data directory:
+
+- **Linux**: `~/.local/share/.timo.db`
+- **macOS**: `~/Library/Application Support/.timo.db`
+- **Windows**: `%LOCALAPPDATA%\.timo.db`
+
+Location is determined by the `dirs::data_local_dir()` function in `src/sqlite/sqlite_storage.rs:14`.
+
+## Extension Points
+
+The architecture supports several extension possibilities:
+
+### New Commands
+
+1. Add variant to `Commands` enum in `src/commands.rs`
+2. Add match arm in `Executor::run()` in `src/executor.rs`
+3. Implement method in `TaskService`
+4. Add storage method if needed in `Storage` trait
+
+### Alternative Storage Backends
+
+1. Implement the `Storage` trait for new backend
+2. Update `App::new()` to instantiate the new storage
+3. All other layers remain unchanged
+
+### Enhanced Task Model
+
+1. Add fields to `Task` struct in `src/task.rs`
+2. Update database schema with new migration
+3. Modify storage implementation to handle new fields
+4. Update printer for new display requirements

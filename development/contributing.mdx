@@ -1,0 +1,279 @@
+---
+title: Contributing
+description: Guidelines for contributing to Timo CLI
+---
+
+## Welcome Contributors
+
+Contributions to Timo are welcome! Whether you're fixing bugs, adding features, improving documentation, or suggesting enhancements, your help is appreciated.
+
+## Getting Started
+
+Before you begin contributing, please:
+
+1. Read through this contributing guide
+2. Review the [architecture documentation](/development/architecture) to understand the codebase
+3. Check existing issues and pull requests to avoid duplicate work
+4. Join the discussion on GitHub to coordinate with other contributors
+
+## Repository Information
+
+<Card title="GitHub Repository" icon="github" href="https://github.com/abhishek6262/timo">
+  Fork and clone the repository to get started
+</Card>
+
+## Development Workflow
+
+<Steps>
+  <Step title="Fork the Repository">
+    Fork the Timo repository to your GitHub account and clone it locally:
+    
+    ```bash
+    git clone https://github.com/YOUR_USERNAME/timo.git
+    cd timo
+    ```
+  </Step>
+
+  <Step title="Create a Feature Branch">
+    Create a new branch for your changes:
+    
+    ```bash
+    git checkout -b feature/your-feature-name
+    ```
+    
+    Use descriptive branch names:
+    - `feature/add-reminder-support` for new features
+    - `fix/search-case-sensitivity` for bug fixes
+    - `docs/update-readme` for documentation
+    - `refactor/simplify-storage-layer` for refactoring
+  </Step>
+
+  <Step title="Make Your Changes">
+    Implement your changes following the code style guidelines below. Ensure your changes:
+    
+    - Are focused and solve a specific problem
+    - Don't break existing functionality
+    - Follow the existing architecture patterns
+    - Include appropriate error handling
+  </Step>
+
+  <Step title="Test Your Changes">
+    Build and test the application locally:
+    
+    ```bash
+    cargo build
+    cargo run -- add "Test thought"
+    cargo run -- list
+    ```
+    
+    Verify that:
+    - The application compiles without errors
+    - Your changes work as expected
+    - Existing commands still function correctly
+  </Step>
+
+  <Step title="Commit Your Changes">
+    Write clear, descriptive commit messages:
+    
+    ```bash
+    git add .
+    git commit -m "Add reminder support for thoughts"
+    ```
+    
+    Good commit message format:
+    - Use present tense ("Add feature" not "Added feature")
+    - Be concise but descriptive
+    - Reference issue numbers when applicable ("Fix #42: Search bug")
+  </Step>
+
+  <Step title="Push and Create Pull Request">
+    Push your changes to your fork:
+    
+    ```bash
+    git push origin feature/your-feature-name
+    ```
+    
+    Then create a pull request on GitHub with:
+    - Clear description of changes
+    - Reference to related issues
+    - Any relevant context or screenshots
+  </Step>
+</Steps>
+
+## Code Style Guidelines
+
+### Rust Best Practices
+
+Follow standard Rust conventions:
+
+- Run `cargo fmt` before committing to ensure consistent formatting
+- Run `cargo clippy` to catch common mistakes and improve code quality
+- Use meaningful variable and function names
+- Add documentation comments for public APIs
+- Keep functions focused and reasonably sized
+
+### Project-Specific Patterns
+
+<AccordionGroup>
+  <Accordion title="Storage Layer">
+    When adding storage functionality:
+    - Add method to the `Storage` trait in `src/storage.rs`
+    - Implement in `SqliteStorage` in `src/sqlite/sqlite_storage.rs`
+    - Use parameterized queries to prevent SQL injection
+    - Handle database errors appropriately
+  </Accordion>
+
+  <Accordion title="Commands">
+    When adding new commands:
+    - Add variant to `Commands` enum in `src/commands.rs`
+    - Include help text using clap's `#[command(about = "...")]`
+    - Add match arm in `Executor::run()` in `src/executor.rs`
+    - Implement business logic in `TaskService`
+  </Accordion>
+
+  <Accordion title="Database Changes">
+    When modifying the database schema:
+    - Create a new migration file in `src/sql_migrations/`
+    - Follow naming convention: `V{N}__{description}.sql`
+    - Test migration both on new and existing databases
+    - Update Task model if adding/removing fields
+  </Accordion>
+</AccordionGroup>
+
+### Error Handling
+
+The current codebase uses `.unwrap()` for simplicity, but consider:
+
+- Using `Result<T, E>` for operations that can fail
+- Providing helpful error messages to users
+- Logging errors for debugging purposes
+- Gracefully handling expected failure cases
+
+## Types of Contributions
+
+### Bug Fixes
+
+<Card title="Reporting Bugs" icon="bug">
+  Found a bug? Please open an issue on GitHub with:
+  - Clear description of the problem
+  - Steps to reproduce
+  - Expected vs actual behavior
+  - Your environment (OS, Rust version)
+</Card>
+
+When fixing bugs:
+- Reference the issue number in your PR
+- Include details on what caused the bug
+- Test edge cases to ensure the fix is complete
+
+### New Features
+
+<Card title="Feature Requests" icon="lightbulb">
+  Have an idea? Open an issue to discuss before implementing:
+  - Describe the feature and its use case
+  - Explain how it fits with Timo's goals
+  - Consider alternative approaches
+  - Get feedback from maintainers
+</Card>
+
+Check the roadmap in the README for planned features:
+- **Labels**: ✅ Completed
+- **Clear Confirmation**: ✅ Completed
+- **Reminders**: 📅 Planned
+
+### Documentation
+
+Documentation improvements are always welcome:
+- Fix typos or unclear explanations
+- Add examples or use cases
+- Improve code comments
+- Update README or guides
+- Write tutorials or blog posts
+
+### Code Quality
+
+Help improve the codebase:
+- Refactor for clarity or performance
+- Add error handling
+- Improve test coverage
+- Update dependencies
+- Optimize algorithms or queries
+
+## Pull Request Guidelines
+
+### Before Submitting
+
+- [ ] Code compiles without errors
+- [ ] Changes are tested manually
+- [ ] Code follows Rust formatting (`cargo fmt`)
+- [ ] No clippy warnings (`cargo clippy`)
+- [ ] Commit messages are clear and descriptive
+- [ ] PR description explains the changes
+
+### PR Review Process
+
+1. Maintainers will review your PR
+2. You may receive feedback or change requests
+3. Address feedback by pushing new commits
+4. Once approved, your PR will be merged
+
+### Tips for Faster Review
+
+- Keep PRs focused on a single change
+- Provide context in the description
+- Respond promptly to feedback
+- Be open to suggestions
+- Test thoroughly before submitting
+
+## Code of Conduct
+
+### Our Standards
+
+We are committed to providing a welcoming and inclusive environment:
+
+- **Be respectful**: Treat everyone with respect and courtesy
+- **Be collaborative**: Work together and help each other
+- **Be open-minded**: Accept constructive criticism gracefully
+- **Be professional**: Keep discussions focused and productive
+
+### Unacceptable Behavior
+
+- Harassment or discriminatory language
+- Personal attacks or insults
+- Trolling or inflammatory comments
+- Publishing others' private information
+
+## Getting Help
+
+<CardGroup cols={2}>
+  <Card title="GitHub Issues" icon="github">
+    Ask questions or report problems on GitHub Issues
+  </Card>
+  
+  <Card title="Documentation" icon="book">
+    Review the [architecture docs](/development/architecture) for technical details
+  </Card>
+</CardGroup>
+
+## License
+
+By contributing to Timo, you agree that your contributions will be licensed under the [MIT License](https://github.com/abhishek6262/timo/blob/main/LICENSE.txt).
+
+The MIT License is permissive and allows:
+- Commercial use
+- Modification
+- Distribution
+- Private use
+
+## Recognition
+
+All contributors will be recognized for their contributions. Your GitHub profile will be displayed in the repository's contributors list.
+
+## Questions?
+
+If you have questions about contributing, feel free to:
+- Open a discussion on GitHub
+- Ask in an issue or PR
+- Review existing issues for similar questions
+
+Thank you for contributing to Timo!

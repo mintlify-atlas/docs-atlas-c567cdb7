@@ -1,0 +1,102 @@
+---
+title: Introduction
+description: Capture and search thoughts directly in your terminal with Timo CLI
+---
+
+# Capture your thoughts in the terminal
+
+Timo is a command-line tool that helps you capture fleeting thoughts, ideas, and reminders without leaving your terminal. Instead of context-switching to a notes app, just type `timo add` and keep working.
+
+All your thoughts are stored locally in a SQLite database, searchable instantly, and organized with labels.
+
+<CardGroup cols={2}>
+  <Card title="Installation" icon="download" href="/installation">
+    Install Timo with Homebrew or build from source
+  </Card>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Add your first thought in under 2 minutes
+  </Card>
+  <Card title="Commands" icon="terminal" href="/commands/add">
+    Explore all available commands
+  </Card>
+  <Card title="Labels" icon="tag" href="/guides/labels">
+    Organize thoughts with labels
+  </Card>
+</CardGroup>
+
+## Why Timo?
+
+Timo is built for developers who live in the terminal and need a frictionless way to capture thoughts:
+
+- **Stay in flow**: No context-switching to other apps
+- **Lightning fast**: Add, search, and list thoughts in milliseconds
+- **Local and private**: All data stored in SQLite on your machine
+- **Simple and focused**: Five commands is all you need
+- **Beautiful output**: Color-coded, easy-to-read terminal display
+
+## Key features
+
+<CardGroup cols={2}>
+  <Card title="Add and manage thoughts" icon="plus">
+    Quickly capture thoughts from the command line with `timo add`
+  </Card>
+  <Card title="Search thoughts" icon="magnifying-glass">
+    Find thoughts instantly with keyword search using `timo search`
+  </Card>
+  <Card title="Organize with labels" icon="tags">
+    Group related thoughts with labels and filter by label
+  </Card>
+  <Card title="SQLite storage" icon="database">
+    Persistent, reliable storage backed by SQLite
+  </Card>
+  <Card title="Colored output" icon="palette">
+    Clean, colored terminal output for better readability
+  </Card>
+  <Card title="Lightweight" icon="feather">
+    Fast Rust binary with minimal dependencies
+  </Card>
+</CardGroup>
+
+## Example workflow
+
+Here's how Timo fits into your daily workflow:
+
+```bash
+# Capture a quick thought
+timo add "Check if the API supports batch requests"
+
+# Add a thought with a label
+timo add "Refactor auth module" --label "work"
+
+# List all thoughts
+timo list
+# Output:
+# [1]: Check if the API supports batch requests
+# [2]: Refactor auth module
+
+# Search for specific thoughts
+timo search "API"
+# Output:
+# [1]: Check if the API supports batch requests
+
+# Remove a thought when done
+timo remove 1
+```
+
+<Tip>
+Use labels to separate work thoughts, personal reminders, and learning notes
+</Tip>
+
+## What's next?
+
+<Steps>
+  <Step title="Install Timo">
+    Get Timo installed on your system with [installation instructions](/installation)
+  </Step>
+  <Step title="Add your first thought">
+    Follow the [quickstart guide](/quickstart) to capture your first thought
+  </Step>
+  <Step title="Explore commands">
+    Learn about all [available commands](/commands/add)
+  </Step>
+</Steps>

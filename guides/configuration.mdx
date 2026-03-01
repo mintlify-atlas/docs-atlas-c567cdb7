@@ -1,0 +1,315 @@
+---
+title: "Configuration & Storage"
+description: "Learn how Timo stores your data and configure your environment"
+---
+
+Timo is designed to be simple and self-contained, requiring minimal configuration. Your thoughts are stored locally in a SQLite database, giving you complete control over your data.
+
+## Data storage location
+
+Timo stores all your thoughts in a local SQLite database file. The location depends on your operating system:
+
+<Tabs>
+  <Tab title="macOS">
+    ```
+    ~/Library/Application Support/.timo.db
+    ```
+    
+    You can verify this location:
+    ```bash
+    ls -lh ~/Library/Application\ Support/.timo.db
+    ```
+  </Tab>
+  
+  <Tab title="Linux">
+    ```
+    ~/.local/share/.timo.db
+    ```
+    
+    You can verify this location:
+    ```bash
+    ls -lh ~/.local/share/.timo.db
+    ```
+  </Tab>
+  
+  <Tab title="Windows">
+    ```
+    %LOCALAPPDATA%\.timo.db
+    ```
+    
+    Example: `C:\Users\YourName\AppData\Local\.timo.db`
+  </Tab>
+</Tabs>
+
+<Note>
+Timo uses Rust's `dirs::data_local_dir()` function to determine the appropriate data directory for your platform. This follows platform conventions for storing application data.
+</Note>
+
+## Database structure
+
+The SQLite database contains a `tasks` table with the following schema:
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | INTEGER PRIMARY KEY | Auto-incrementing unique identifier |
+| `content` | TEXT | The thought content |
+| `label` | TEXT (nullable) | Optional label for categorization |
+
+The database is automatically created the first time you run a Timo command. Migrations run automatically to ensure the schema is up to date.
+
+<Accordion title="View database schema details">
+  The database initialization happens in `src/sqlite/sqlite_storage.rs:14-20`:
+
+  ```rust
+  fn get_db_path() -> PathBuf {
+      let mut storage_path = data_local_dir().unwrap();
+      let db_name = get_db_name();
+      
+      storage_path.push(db_name);
+      storage_path
+  }
+  ```
+
+  When you first run Timo, it:
+  1. Determines the appropriate data directory
+  2. Creates `.timo.db` if it doesn't exist
+  3. Runs database migrations
+  4. Opens a connection for operations
+</Accordion>
+
+## Environment variables
+
+Timo supports one environment variable for development purposes:
+
+### DB_NAME
+
+Override the default database filename during development.
+
+```bash
+export DB_NAME=".timo-dev.db"
+timo add Testing with custom database
+```
+
+<Warning>
+The `DB_NAME` environment variable is intended for development only. In production use, Timo always uses `.timo.db` as the database filename.
+</Warning>
+
+**Use cases:**
+- Testing Timo without affecting your production thoughts
+- Development and debugging
+- Running multiple isolated instances
+
+**Implementation:**
+
+The database name resolution is in `src/sqlite/sqlite_storage.rs:8-12`:
+
+```rust
+fn get_db_name() -> String {
+    // We'll set the DB_NAME environment only while the development
+    // mode. In production, we'll use the default value.
+    dotenv::var("DB_NAME").unwrap_or(".timo.db".to_string())
+}
+```
+
+## Data persistence
+
+Timo provides persistent storage with immediate durability:
+
+<Steps>
+  <Step title="Automatic saving">
+    Every operation (add, remove, clear) is immediately committed to the SQLite database. There's no need to manually save or sync.
+  </Step>
+  
+  <Step title="Data integrity">
+    SQLite provides ACID (Atomicity, Consistency, Isolation, Durability) guarantees. Your data is safe even if the application crashes.
+  </Step>
+  
+  <Step title="No cloud sync">
+    All data is stored locally on your machine. Timo doesn't connect to any remote servers or cloud services.
+  </Step>
+</Steps>
+
+<Tip>
+Because your data is stored locally, you can use your existing backup tools (Time Machine, rsync, cloud storage) to back up your Timo database.
+</Tip>
+
+## Backing up your thoughts
+
+Since Timo stores everything in a single SQLite file, backing up is straightforward:
+
+### Manual backup
+
+<Tabs>
+  <Tab title="macOS/Linux">
+    ```bash
+    # Create a backup
+    cp ~/.local/share/.timo.db ~/backups/timo-backup-$(date +%Y%m%d).db
+    
+    # Or use rsync for incremental backups
+    rsync -av ~/.local/share/.timo.db ~/backups/
+    ```
+  </Tab>
+  
+  <Tab title="Windows">
+    ```powershell
+    # Create a backup
+    Copy-Item "$env:LOCALAPPDATA\.timo.db" -Destination "$HOME\backups\timo-backup-$(Get-Date -Format 'yyyyMMdd').db"
+    ```
+  </Tab>
+</Tabs>
+
+### Automated backup
+
+Add a cron job (macOS/Linux) or scheduled task (Windows) to back up regularly:
+
+```bash
+# Add to crontab (crontab -e)
+0 2 * * * cp ~/.local/share/.timo.db ~/backups/timo-backup-$(date +\%Y\%m\%d).db
+```
+
+This backs up your database every day at 2 AM.
+
+### Cloud backup
+
+Include the Timo database in your cloud storage sync:
+
+<Tabs>
+  <Tab title="Dropbox">
+    ```bash
+    # Create a symbolic link
+    ln -s ~/.local/share/.timo.db ~/Dropbox/timo-backup.db
+    ```
+  </Tab>
+  
+  <Tab title="iCloud">
+    ```bash
+    # Create a symbolic link
+    ln -s ~/.local/share/.timo.db ~/Library/Mobile\ Documents/com~apple~CloudDocs/timo-backup.db
+    ```
+  </Tab>
+  
+  <Tab title="Google Drive">
+    ```bash
+    # Create a symbolic link
+    ln -s ~/.local/share/.timo.db ~/Google\ Drive/timo-backup.db
+    ```
+  </Tab>
+</Tabs>
+
+<Warning>
+If you sync the active database file, avoid using Timo simultaneously on multiple machines. SQLite databases aren't designed for concurrent access across network file systems.
+</Warning>
+
+## Restoring from backup
+
+To restore your thoughts from a backup:
+
+```bash
+# Stop any running Timo instances
+# Then replace the database file
+cp ~/backups/timo-backup-20260301.db ~/.local/share/.timo.db
+
+# Verify restoration
+timo list
+```
+
+## Exporting data
+
+While Timo doesn't have a built-in export feature, you can extract data directly from the SQLite database:
+
+### Export to CSV
+
+```bash
+sqlite3 ~/.local/share/.timo.db \
+  -header -csv \
+  "SELECT * FROM tasks" > timo-export.csv
+```
+
+### Export to JSON
+
+```bash
+sqlite3 ~/.local/share/.timo.db \
+  -json \
+  "SELECT * FROM tasks" > timo-export.json
+```
+
+### Export to plain text
+
+```bash
+sqlite3 ~/.local/share/.timo.db \
+  "SELECT '[' || id || '] ' || content || 
+   CASE WHEN label IS NOT NULL THEN ' #' || label ELSE '' END 
+   FROM tasks" > timo-export.txt
+```
+
+<Tip>
+You can use any SQLite-compatible tool to query and analyze your Timo database, such as [DB Browser for SQLite](https://sqlitebrowser.org/) or [TablePlus](https://tableplus.com/).
+</Tip>
+
+## Data migration
+
+If you're moving to a new machine:
+
+<Steps>
+  <Step title="Export from old machine">
+    Copy the database file:
+    ```bash
+    cp ~/.local/share/.timo.db ~/timo-migration.db
+    ```
+  </Step>
+  
+  <Step title="Transfer to new machine">
+    Use your preferred method (USB drive, cloud storage, scp):
+    ```bash
+    scp ~/timo-migration.db user@new-machine:~/
+    ```
+  </Step>
+  
+  <Step title="Install Timo on new machine">
+    Follow the [installation instructions](/quickstart) to install Timo.
+  </Step>
+  
+  <Step title="Import database">
+    Place the database file in the correct location:
+    ```bash
+    mkdir -p ~/.local/share
+    cp ~/timo-migration.db ~/.local/share/.timo.db
+    ```
+  </Step>
+  
+  <Step title="Verify migration">
+    Check that your thoughts are available:
+    ```bash
+    timo list
+    ```
+  </Step>
+</Steps>
+
+## Storage optimization
+
+For most users, the database will remain small (under 1 MB even with thousands of thoughts). If needed, you can compact the database:
+
+```bash
+sqlite3 ~/.local/share/.timo.db "VACUUM;"
+```
+
+This reclaims unused space and optimizes the database file.
+
+## No configuration file
+
+Timo intentionally doesn't use a configuration file. The philosophy is to keep things simple:
+
+- No `.timorc` or config files to manage
+- No YAML or TOML configuration
+- Sensible defaults that work for everyone
+- All functionality accessible via command-line flags
+
+This design choice means:
+- Nothing to configure before first use
+- No configuration drift between machines
+- Clear and explicit command behavior
+- Easy to understand and troubleshoot
+
+<Note>
+If you want to customize Timo's behavior, use [shell aliases and functions](/guides/tips-and-tricks#shell-integration) instead of configuration files.
+</Note>

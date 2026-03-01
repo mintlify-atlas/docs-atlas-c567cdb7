@@ -1,0 +1,85 @@
+---
+title: 'timo clear'
+description: 'Remove all thoughts from your list'
+---
+
+## Description
+
+The `timo clear` command removes all thoughts from your list in one operation. This is useful when you want to start fresh or archive all your current thoughts. To prevent accidental data loss, this command requires explicit confirmation.
+
+## Syntax
+
+```bash
+timo clear --confirmed
+```
+
+## Options
+
+<ParamField path="--confirmed" type="boolean" required>
+  Required confirmation flag to prevent accidental deletion of all thoughts. You must explicitly include this flag for the command to execute.
+</ParamField>
+
+## Examples
+
+### Clear all thoughts
+
+```bash
+timo clear --confirmed
+```
+
+```
+✓ All thoughts have been cleared successfully
+```
+
+### Attempting to clear without confirmation
+
+```bash
+timo clear
+```
+
+```
+error: the following required arguments were not provided:
+  --confirmed
+
+Usage: timo clear --confirmed
+
+For more information, try '--help'.
+```
+
+## Common Use Cases
+
+<CodeGroup>
+
+```bash Fresh start
+# Clear all thoughts to start a new week
+timo clear --confirmed
+```
+
+```bash Archive workflow
+# Export thoughts (manually backup if needed)
+# Then clear for new period
+timo clear --confirmed
+```
+
+```bash Cleanup
+# Remove all thoughts after completing a project
+timo clear --confirmed
+```
+
+</CodeGroup>
+
+<Warning>
+  This command permanently deletes ALL thoughts from your list. This action cannot be undone. Make sure you have backed up any important thoughts before running this command.
+</Warning>
+
+<Warning>
+  The `--confirmed` flag is required by design. If you try to run `timo clear` without it, the command will fail. This is a safety feature to prevent accidental data loss.
+</Warning>
+
+<Note>
+  If you only want to remove specific thoughts, use the `timo remove` command instead with the appropriate thought IDs.
+</Note>
+
+<Note>
+  Consider using `timo list` before clearing to review what you're about to delete.
+</Note>

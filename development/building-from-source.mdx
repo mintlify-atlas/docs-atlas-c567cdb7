@@ -1,0 +1,451 @@
+---
+title: Building from Source
+description: Detailed instructions for building and installing Timo CLI from source code
+---
+
+## Overview
+
+Building Timo from source gives you access to the latest development version and allows you to customize the application for your needs. This guide covers everything from prerequisites to troubleshooting.
+
+## Prerequisites
+
+Before building Timo, ensure you have the required tools installed.
+
+### Rust Toolchain
+
+Timo requires Rust 2021 edition or later.
+
+<Steps>
+  <Step title="Install Rust">
+    Install Rust using rustup (recommended method):
+    
+    ```bash
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+    ```
+    
+    Follow the on-screen instructions to complete the installation.
+  </Step>
+
+  <Step title="Verify Installation">
+    Confirm Rust and Cargo are installed:
+    
+    ```bash
+    rustc --version
+    cargo --version
+    ```
+    
+    You should see version numbers for both commands.
+  </Step>
+
+  <Step title="Update Rust (Optional)">
+    If you already have Rust installed, update to the latest version:
+    
+    ```bash
+    rustup update
+    ```
+  </Step>
+</Steps>
+
+### System Requirements
+
+<CardGroup cols={2}>
+  <Card title="Operating System" icon="desktop">
+    - Linux (any distribution)
+    - macOS 10.13 or later
+    - Windows 10 or later
+  </Card>
+  
+  <Card title="Development Tools" icon="wrench">
+    - Git for cloning the repository
+    - C compiler (for SQLite bundled build)
+    - Internet connection for dependencies
+  </Card>
+</CardGroup>
+
+## Building Timo
+
+<Steps>
+  <Step title="Clone the Repository">
+    Clone the Timo repository from GitHub:
+    
+    ```bash
+    git clone https://github.com/abhishek6262/timo.git
+    cd timo
+    ```
+    
+    This downloads the complete source code including all dependencies defined in `Cargo.toml`.
+  </Step>
+
+  <Step title="Build the Project">
+    Build Timo in release mode for optimal performance:
+    
+    ```bash
+    cargo build --release
+    ```
+    
+    This will:
+    - Download and compile all dependencies (clap, rusqlite, refinery, colored, dirs, dotenv)
+    - Build a bundled SQLite library
+    - Compile Timo with optimizations
+    - Create the binary in `target/release/timo`
+    
+    <Note>
+      The first build will take longer as it downloads and compiles dependencies. Subsequent builds will be faster.
+    </Note>
+  </Step>
+
+  <Step title="Test the Build">
+    Verify the build was successful by running Timo:
+    
+    ```bash
+    ./target/release/timo --version
+    ./target/release/timo help
+    ```
+    
+    You should see the version number and help information.
+  </Step>
+</Steps>
+
+## Installing Timo
+
+After building, install Timo globally to use it from anywhere.
+
+<Tabs>
+  <Tab title="Cargo Install">
+    Install directly using Cargo (recommended):
+    
+    ```bash
+    cargo install --path .
+    ```
+    
+    This installs the binary to `~/.cargo/bin/timo`, which should be in your PATH.
+    
+    Verify the installation:
+    
+    ```bash
+    timo --version
+    ```
+  </Tab>
+  
+  <Tab title="Manual Install">
+    Manually copy the binary to a directory in your PATH:
+    
+    **Linux/macOS:**
+    ```bash
+    sudo cp target/release/timo /usr/local/bin/
+    ```
+    
+    **Windows:**
+    ```powershell
+    copy target\release\timo.exe C:\Windows\System32\
+    ```
+    
+    Or copy to any directory in your PATH.
+  </Tab>
+</Tabs>
+
+## Development Build
+
+For development and testing, you can build without optimizations:
+
+```bash
+# Build in debug mode (faster compilation, slower runtime)
+cargo build
+
+# Run directly without building a binary
+cargo run -- add "Test thought"
+cargo run -- list
+```
+
+Debug builds are faster to compile but slower to execute. Use them during development.
+
+## Running Tests
+
+<Warning>
+  The current codebase does not include automated tests. This section describes how to manually test the application.
+</Warning>
+
+### Manual Testing
+
+Test all commands to ensure functionality:
+
+```bash
+# Set a custom database for testing
+export DB_NAME=".timo-test.db"
+
+# Test adding thoughts
+cargo run -- add "Buy groceries" -l errands
+cargo run -- add "Team meeting at 3pm" -l work
+cargo run -- add "Read Rust book"
+
+# Test listing
+cargo run -- list
+cargo run -- list -l work
+cargo run -- list -s  # Show labels
+
+# Test searching
+cargo run -- search meeting
+cargo run -- search groceries -l errands
+
+# Test removal
+cargo run -- remove 1
+cargo run -- remove 2 3
+
+# Test clearing
+cargo run -- clear --confirmed
+```
+
+### Database Testing
+
+The SQLite database is stored in your local data directory. To test with a clean database:
+
+<Tabs>
+  <Tab title="Linux">
+    ```bash
+    rm ~/.local/share/.timo.db
+    cargo run -- add "First thought"
+    ```
+  </Tab>
+  
+  <Tab title="macOS">
+    ```bash
+    rm ~/Library/Application\ Support/.timo.db
+    cargo run -- add "First thought"
+    ```
+  </Tab>
+  
+  <Tab title="Windows">
+    ```powershell
+    Remove-Item $env:LOCALAPPDATA\.timo.db
+    cargo run -- add "First thought"
+    ```
+  </Tab>
+</Tabs>
+
+## Project Structure
+
+Understanding the source structure helps when modifying or debugging:
+
+```
+timo/
+├── Cargo.toml                 # Project metadata and dependencies
+├── Cargo.lock                 # Dependency lock file
+├── LICENSE.txt                # MIT license
+├── readme.md                  # Project README
+└── src/
+    ├── main.rs                # Application entry point
+    ├── app.rs                 # App initialization
+    ├── cli.rs                 # CLI interface
+    ├── commands.rs            # Command definitions
+    ├── executor.rs            # Command execution
+    ├── task.rs                # Task model
+    ├── task_service.rs        # Business logic
+    ├── task_repository.rs     # Data access layer
+    ├── task_printer.rs        # Output formatting
+    ├── storage.rs             # Storage trait
+    ├── sqlite/
+    │   ├── mod.rs
+    │   ├── sqlite_storage.rs  # SQLite implementation
+    │   └── migration.rs       # Migration runner
+    └── sql_migrations/
+        ├── V1__create_tasks_table.sql
+        └── V2__add_label_column_in_tasks_table.sql
+```
+
+See the [Architecture documentation](/development/architecture) for detailed component descriptions.
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Compilation Errors">
+    **Problem**: Cargo fails to compile dependencies
+    
+    **Solutions**:
+    - Update Rust: `rustup update`
+    - Clear the build cache: `cargo clean`
+    - Delete `Cargo.lock` and rebuild: `rm Cargo.lock && cargo build --release`
+    - Ensure you have a C compiler installed for SQLite bundled build
+      - Linux: `sudo apt-get install build-essential`
+      - macOS: `xcode-select --install`
+      - Windows: Install Visual Studio Build Tools
+  </Accordion>
+
+  <Accordion title="SQLite Bundled Build Fails">
+    **Problem**: Error building rusqlite with bundled feature
+    
+    **Solutions**:
+    - Install C compiler and development tools (see above)
+    - On Linux, install additional dependencies:
+      ```bash
+      sudo apt-get install libsqlite3-dev
+      ```
+    - Check that you have sufficient disk space
+  </Accordion>
+
+  <Accordion title="Binary Not Found After Install">
+    **Problem**: `timo: command not found` after installation
+    
+    **Solutions**:
+    - Ensure `~/.cargo/bin` is in your PATH:
+      ```bash
+      echo $PATH | grep cargo
+      ```
+    - Add to PATH if missing (add to `~/.bashrc` or `~/.zshrc`):
+      ```bash
+      export PATH="$HOME/.cargo/bin:$PATH"
+      ```
+    - Restart your terminal or run:
+      ```bash
+      source ~/.bashrc  # or ~/.zshrc
+      ```
+  </Accordion>
+
+  <Accordion title="Permission Denied on Linux/macOS">
+    **Problem**: Permission denied when running the binary
+    
+    **Solutions**:
+    - Make the binary executable:
+      ```bash
+      chmod +x target/release/timo
+      ```
+    - If using manual install, use `sudo` for system directories
+  </Accordion>
+
+  <Accordion title="Database Permission Issues">
+    **Problem**: Cannot create or access database file
+    
+    **Solutions**:
+    - Check permissions on the local data directory:
+      - Linux: `~/.local/share/`
+      - macOS: `~/Library/Application Support/`
+    - Ensure the directory exists and is writable:
+      ```bash
+      mkdir -p ~/.local/share  # Linux
+      chmod 755 ~/.local/share
+      ```
+  </Accordion>
+
+  <Accordion title="Migration Errors">
+    **Problem**: Database migration fails on startup
+    
+    **Solutions**:
+    - Delete the database and let Timo recreate it:
+      ```bash
+      rm ~/.local/share/.timo.db
+      ```
+    - Check that `src/sql_migrations/` directory exists with migration files
+    - Ensure migrations are embedded at compile time
+  </Accordion>
+</AccordionGroup>
+
+## Customizing the Build
+
+### Custom Database Location
+
+Set the `DB_NAME` environment variable before running:
+
+```bash
+# Development database
+export DB_NAME=".timo-dev.db"
+cargo run -- list
+
+# Or inline for a single command
+DB_NAME=".timo-test.db" cargo run -- add "Test"
+```
+
+### Build Profiles
+
+Customize build settings in `Cargo.toml`:
+
+```toml
+[profile.release]
+opt-level = 3        # Maximum optimization
+lto = true          # Link-time optimization
+codegen-units = 1   # Better optimization, slower compile
+strip = true        # Remove debug symbols
+```
+
+### Cross-Compilation
+
+Build for different platforms:
+
+```bash
+# Install cross-compilation target
+rustup target add x86_64-unknown-linux-musl
+
+# Build for the target
+cargo build --release --target x86_64-unknown-linux-musl
+```
+
+## Development Workflow
+
+### Quick Iteration
+
+For rapid development:
+
+```bash
+# Use cargo-watch for automatic rebuilds
+cargo install cargo-watch
+cargo watch -x 'run -- list'
+
+# Format code before committing
+cargo fmt
+
+# Check for common issues
+cargo clippy
+```
+
+### Debugging
+
+Run with debug output:
+
+```bash
+# Use the debug build
+cargo build
+
+# Run with backtrace for panics
+RUST_BACKTRACE=1 ./target/debug/timo list
+
+# Full backtrace for detailed errors
+RUST_BACKTRACE=full ./target/debug/timo list
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Architecture" icon="diagram-project" href="/development/architecture">
+    Learn about the codebase structure and design patterns
+  </Card>
+  
+  <Card title="Contributing" icon="code-pull-request" href="/development/contributing">
+    Contribute improvements and new features
+  </Card>
+  
+  <Card title="Commands" icon="terminal" href="/commands/add">
+    Explore all available commands
+  </Card>
+  
+  <Card title="Labels" icon="tag" href="/guides/labels">
+    Learn how to organize thoughts with labels
+  </Card>
+</CardGroup>
+
+## Additional Resources
+
+<CardGroup cols={2}>
+  <Card title="Rust Book" icon="book" href="https://doc.rust-lang.org/book/">
+    Learn Rust programming language
+  </Card>
+  
+  <Card title="Cargo Documentation" icon="box" href="https://doc.rust-lang.org/cargo/">
+    Master Rust's package manager
+  </Card>
+  
+  <Card title="Clap Documentation" icon="terminal" href="https://docs.rs/clap/">
+    Understand the CLI framework
+  </Card>
+  
+  <Card title="Rusqlite Documentation" icon="database" href="https://docs.rs/rusqlite/">
+    Work with SQLite in Rust
+  </Card>
+</CardGroup>

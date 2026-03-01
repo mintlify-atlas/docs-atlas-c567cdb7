@@ -1,0 +1,123 @@
+---
+title: 'timo remove'
+description: 'Remove specific thoughts from your list'
+---
+
+## Description
+
+The `timo remove` command allows you to delete one or more specific thoughts from your list by providing their ID numbers. The IDs are shown when you use the `timo list` or `timo search` commands.
+
+## Syntax
+
+```bash
+timo remove <id> [<id2> <id3> ...]
+```
+
+## Arguments
+
+<ParamField path="id" type="number" required>
+  The ID number(s) of the thought(s) you want to remove. You can specify multiple IDs separated by spaces to remove multiple thoughts at once.
+</ParamField>
+
+## Examples
+
+### Remove a single thought
+
+First, list your thoughts to see their IDs:
+
+```bash
+timo list
+```
+
+```
+1. Buy groceries
+2. Work on quarterly report
+3. Schedule meeting with design team
+4. Review pull request #123
+5. Pick up dry cleaning
+```
+
+Then remove a specific thought:
+
+```bash
+timo remove 3
+```
+
+```
+✓ Thought #3 removed successfully
+```
+
+### Remove multiple thoughts
+
+```bash
+timo remove 1 4 5
+```
+
+```
+✓ 3 thoughts removed successfully
+  - Thought #1
+  - Thought #4
+  - Thought #5
+```
+
+### Remove thoughts after searching
+
+```bash
+timo search meeting
+```
+
+```
+Found 2 thoughts:
+
+3. Schedule meeting with design team
+7. Prepare slides for client meeting
+```
+
+```bash
+timo remove 3 7
+```
+
+```
+✓ 2 thoughts removed successfully
+  - Thought #3
+  - Thought #7
+```
+
+## Common Use Cases
+
+<CodeGroup>
+
+```bash Clean up completed tasks
+# List all thoughts
+timo list
+
+# Remove completed items
+timo remove 2 5 8
+```
+
+```bash Remove after search
+# Find specific thoughts
+timo search old project -l work
+
+# Remove the outdated ones
+timo remove 12 15
+```
+
+```bash Batch removal
+# Remove multiple thoughts at once
+timo remove 1 2 3 4 5
+```
+
+</CodeGroup>
+
+<Note>
+  Always use `timo list` or `timo search` first to identify the correct ID numbers of the thoughts you want to remove.
+</Note>
+
+<Warning>
+  Once a thought is removed, it cannot be recovered. Make sure you're removing the correct IDs before executing the command.
+</Warning>
+
+<Warning>
+  The ID numbers must be valid. If you provide an ID that doesn't exist, the command may fail or skip that ID.
+</Warning>

@@ -1,0 +1,563 @@
+---
+title: "Tips & Tricks"
+description: "Maximize your productivity with Timo best practices and power-user workflows"
+---
+
+Get the most out of Timo with these productivity tips, workflow patterns, and shell integration techniques.
+
+## Shell integration
+
+### Command aliases
+
+Create shortcuts for frequently used commands:
+
+```bash ~/.bashrc or ~/.zshrc
+# Quick add aliases
+alias ta="timo add"
+alias tl="timo list"
+alias ts="timo search"
+
+# Context-specific aliases
+alias tw="timo add -l work"
+alias tp="timo add -l personal"
+alias ti="timo add -l ideas"
+
+# List with labels by default
+alias tll="timo list -s"
+```
+
+Now you can quickly capture thoughts:
+
+```bash
+ta Fix authentication bug
+tw Review Sarah's pull request
+ti New feature: dark mode
+```
+
+### Shell functions
+
+Create more powerful shortcuts with shell functions:
+
+<Tabs>
+  <Tab title="Bash/Zsh">
+    ```bash ~/.bashrc or ~/.zshrc
+    # Quick thought with timestamp
+    tt() {
+      timo add "$(date '+%H:%M') - $*"
+    }
+    
+    # Add urgent thought
+    urgent() {
+      timo add "URGENT: $*" -l urgent
+    }
+    
+    # Search and show labels
+    tsearch() {
+      timo search "$*" -s
+    }
+    
+    # Show today's work thoughts
+    today() {
+      timo list -l work -s
+    }
+    
+    # Quick idea capture
+    idea() {
+      timo add "💡 $*" -l ideas
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Fish">
+    ```fish ~/.config/fish/functions/
+    # In tt.fish
+    function tt
+      timo add (date '+%H:%M') "- $argv"
+    end
+    
+    # In urgent.fish
+    function urgent
+      timo add "URGENT: $argv" -l urgent
+    end
+    
+    # In tsearch.fish
+    function tsearch
+      timo search $argv -s
+    end
+    ```
+  </Tab>
+</Tabs>
+
+Usage examples:
+
+```bash
+tt Met with design team about new logo
+urgent Database backup failing
+idea Use WebSocket for real-time updates
+```
+
+### Prompt integration
+
+Show thought count in your shell prompt:
+
+<Tabs>
+  <Tab title="Bash">
+    ```bash ~/.bashrc
+    timo_count() {
+      local count=$(sqlite3 ~/.local/share/.timo.db "SELECT COUNT(*) FROM tasks" 2>/dev/null)
+      if [ -n "$count" ] && [ "$count" -gt 0 ]; then
+        echo " [$count]"
+      fi
+    }
+    
+    PS1='\u@\h:\w$(timo_count)\$ '
+    ```
+  </Tab>
+  
+  <Tab title="Zsh">
+    ```zsh ~/.zshrc
+    timo_count() {
+      local count=$(sqlite3 ~/.local/share/.timo.db "SELECT COUNT(*) FROM tasks" 2>/dev/null)
+      if [[ -n $count ]] && [[ $count -gt 0 ]]; then
+        echo " [$count]"
+      fi
+    }
+    
+    RPROMPT='$(timo_count)'
+    ```
+  </Tab>
+</Tabs>
+
+<Tip>
+Keep the prompt function lightweight. If it slows down your shell, consider caching the count or updating it only after Timo commands.
+</Tip>
+
+## Workflow patterns
+
+### Inbox zero workflow
+
+Use Timo as an inbox for thoughts, then process them regularly:
+
+<Steps>
+  <Step title="Capture everything">
+    Throughout the day, quickly add thoughts without overthinking:
+    ```bash
+    timo add Need to update documentation
+    timo add Research new deployment options
+    timo add Schedule 1:1 with Alex
+    ```
+  </Step>
+  
+  <Step title="Review daily">
+    At the end of each day, review your thoughts:
+    ```bash
+    timo list -s
+    ```
+  </Step>
+  
+  <Step title="Process and remove">
+    For each thought:
+    - Do it (if it takes < 2 minutes)
+    - Delegate it (add to team tracker)
+    - Schedule it (add to calendar)
+    - Remove it from Timo
+    
+    ```bash
+    timo remove 1 3 5
+    ```
+  </Step>
+  
+  <Step title="Reach inbox zero">
+    End with an empty list or only important items remaining.
+  </Step>
+</Steps>
+
+### Context-based workflow
+
+Organize thoughts by context and review them when switching contexts:
+
+<AccordionGroup>
+  <Accordion title="Work mode" icon="briefcase">
+    Start your work day by reviewing work thoughts:
+    ```bash
+    timo list -l work -s
+    ```
+    
+    Capture work-related items throughout the day:
+    ```bash
+    timo add Deploy staging environment -l work
+    timo add Review API documentation -l work
+    ```
+    
+    Before ending work:
+    ```bash
+    timo search urgent -l work -s
+    ```
+  </Accordion>
+  
+  <Accordion title="Personal mode" icon="home">
+    During personal time, focus on personal thoughts:
+    ```bash
+    timo list -l personal -s
+    ```
+    
+    Capture personal items:
+    ```bash
+    timo add Buy birthday gift for mom -l personal
+    timo add Schedule car maintenance -l personal
+    ```
+  </Accordion>
+  
+  <Accordion title="Learning mode" icon="book">
+    Track learning progress:
+    ```bash
+    timo list -l learning -s
+    ```
+    
+    Capture insights:
+    ```bash
+    timo add Learned about async/await in Rust -l learning
+    timo add Need to practice algorithm problems -l learning
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Project-based workflow
+
+Manage multiple projects with dedicated labels:
+
+```bash
+# Capture thoughts for different projects
+timo add Implement user authentication -l project-alpha
+timo add Fix navigation bug -l project-alpha
+timo add Design database schema -l project-beta
+timo add Write API documentation -l project-beta
+
+# Focus on one project at a time
+timo list -l project-alpha -s
+
+# Search within a project
+timo search bug -l project-alpha
+
+# When project is complete, clean up
+timo list -l project-alpha  # Review all items
+# Remove completed items one by one
+timo remove 1 2 3
+```
+
+### Quick capture workflow
+
+Minimize friction for capturing thoughts:
+
+<Steps>
+  <Step title="Set up keyboard shortcuts">
+    Create a global keyboard shortcut that opens your terminal and focuses the input.
+    
+    On macOS with iTerm2:
+    - Set up a hotkey window
+    - Bind it to `Ctrl+Shift+Space`
+    - Set the profile to run: `timo add`
+  </Step>
+  
+  <Step title="Use shell aliases">
+    The shorter the command, the faster the capture:
+    ```bash
+    alias t="timo add"
+    ```
+    
+    Now just: `t Quick thought here`
+  </Step>
+  
+  <Step title="Create smart defaults">
+    Use functions with sensible defaults:
+    ```bash
+    t() {
+      local label="work"
+      # During work hours (9-18), default to work label
+      if [ $(date +%H) -ge 9 ] && [ $(date +%H) -lt 18 ]; then
+        label="work"
+      else
+        label="personal"
+      fi
+      timo add "$*" -l "$label"
+    }
+    ```
+  </Step>
+</Steps>
+
+### Review and cleanup workflow
+
+Keep your thought list manageable:
+
+<Tabs>
+  <Tab title="Daily review">
+    ```bash
+    # Morning: Review what you captured yesterday
+    timo list -s
+    
+    # Process urgent items
+    timo search urgent -s
+    
+    # Remove completed items
+    timo remove 2 5 7
+    ```
+  </Tab>
+  
+  <Tab title="Weekly review">
+    ```bash
+    # Review all thoughts
+    timo list -s
+    
+    # Check each label
+    timo list -l work -s
+    timo list -l personal -s
+    timo list -l ideas -s
+    
+    # Archive or remove old items
+    timo remove 1 3 4 8 12
+    ```
+  </Tab>
+  
+  <Tab title="Monthly cleanup">
+    ```bash
+    # Export thoughts for archival
+    sqlite3 ~/.local/share/.timo.db -json \
+      "SELECT * FROM tasks" > archive-$(date +%Y%m).json
+    
+    # Clear completed thoughts
+    timo list -s  # Review one last time
+    
+    # Remove old items
+    timo remove 1 2 3 4 5 6
+    
+    # Or start fresh if everything is processed
+    timo clear --confirmed
+    ```
+  </Tab>
+</Tabs>
+
+## Power-user tips
+
+### Fuzzy finding thoughts
+
+Integrate with `fzf` for interactive thought selection:
+
+```bash ~/.bashrc or ~/.zshrc
+# Fuzzy search and remove
+trm() {
+  local ids=$(timo list -s | fzf -m | grep -oP '^\[\K[0-9]+')
+  if [ -n "$ids" ]; then
+    timo remove $ids
+  fi
+}
+
+# Fuzzy search thoughts
+tf() {
+  timo list -s | fzf
+}
+```
+
+Now you can interactively select thoughts to remove:
+
+```bash
+trm  # Opens fzf with all thoughts, select with tab, enter to remove
+```
+
+### Batch operations
+
+Add multiple thoughts at once:
+
+```bash
+# From a file
+while IFS= read -r line; do
+  timo add "$line" -l imported
+done < thoughts.txt
+
+# From clipboard (macOS)
+pbpaste | while IFS= read -r line; do
+  timo add "$line"
+done
+
+# From clipboard (Linux with xclip)
+xclip -o | while IFS= read -r line; do
+  timo add "$line"
+done
+```
+
+### Advanced search patterns
+
+Combine Timo with grep and other tools:
+
+```bash
+# Search for multiple terms
+timo list | grep -E "(meeting|call|schedule)"
+
+# Search thoughts, count results
+timo search important | wc -l
+
+# Search and copy to clipboard (macOS)
+timo search documentation | pbcopy
+
+# Search and save to file
+timo search bug -l work > bugs-to-fix.txt
+```
+
+### Scripting with Timo
+
+Automate common tasks:
+
+<Tabs>
+  <Tab title="Daily standup helper">
+    ```bash
+    #!/bin/bash
+    # standup.sh - Generate standup notes from yesterday's thoughts
+    
+    echo "Yesterday's accomplishments:"
+    timo list -l work -s | grep -i "done\|completed\|finished"
+    
+    echo -e "\nToday's plan:"
+    timo list -l work -s | grep -i "todo\|plan\|next"
+    
+    echo -e "\nBlockers:"
+    timo list -l work -s | grep -i "blocked\|issue\|problem"
+    ```
+  </Tab>
+  
+  <Tab title="Meeting notes capture">
+    ```bash
+    #!/bin/bash
+    # meeting.sh - Quick meeting notes
+    
+    meeting_name="$1"
+    
+    echo "Capturing notes for: $meeting_name"
+    echo "Enter thoughts (Ctrl-D to finish):"
+    
+    while IFS= read -r line; do
+      timo add "[$meeting_name] $line" -l meetings
+    done
+    
+    echo "Notes saved!"
+    ```
+    
+    Usage:
+    ```bash
+    ./meeting.sh "Design Review"
+    # Enter thoughts, then Ctrl-D
+    ```
+  </Tab>
+  
+  <Tab title="End of day summary">
+    ```bash
+    #!/bin/bash
+    # eod-summary.sh - End of day summary
+    
+    total=$(sqlite3 ~/.local/share/.timo.db "SELECT COUNT(*) FROM tasks")
+    work=$(sqlite3 ~/.local/share/.timo.db "SELECT COUNT(*) FROM tasks WHERE label='work'")
+    urgent=$(sqlite3 ~/.local/share/.timo.db "SELECT COUNT(*) FROM tasks WHERE label='urgent'")
+    
+    echo "End of Day Summary"
+    echo "=================="
+    echo "Total thoughts: $total"
+    echo "Work items: $work"
+    echo "Urgent items: $urgent"
+    echo ""
+    
+    if [ "$urgent" -gt 0 ]; then
+      echo "⚠️  Urgent items remaining:"
+      timo list -l urgent -s
+    fi
+    ```
+  </Tab>
+</Tabs>
+
+### Git integration
+
+Track development thoughts with commits:
+
+```bash ~/.bashrc or ~/.zshrc
+# Add thought with current branch name
+gitt() {
+  local branch=$(git branch --show-current 2>/dev/null)
+  if [ -n "$branch" ]; then
+    timo add "[$branch] $*" -l dev
+  else
+    timo add "$*" -l dev
+  fi
+}
+
+# Review thoughts for current branch
+git-thoughts() {
+  local branch=$(git branch --show-current)
+  timo search "[$branch]" -l dev -s
+}
+```
+
+Usage:
+
+```bash
+gitt Need to add error handling
+gitt Refactor database queries
+git-thoughts  # See all thoughts for this branch
+```
+
+### macOS notifications
+
+Get reminded of urgent thoughts:
+
+```bash
+#!/bin/bash
+# timo-remind.sh - Show notification if urgent thoughts exist
+
+count=$(sqlite3 ~/.local/share/.timo.db \
+  "SELECT COUNT(*) FROM tasks WHERE label='urgent'" 2>/dev/null)
+
+if [ "$count" -gt 0 ]; then
+  osascript -e "display notification \"You have $count urgent thoughts\" with title \"Timo Reminder\""
+  timo list -l urgent -s
+fi
+```
+
+Add to crontab to run every hour:
+
+```bash
+0 * * * * /path/to/timo-remind.sh
+```
+
+## Performance tips
+
+<CardGroup cols={2}>
+  <Card title="Keep lists focused" icon="filter">
+    Use labels to keep separate lists rather than one huge list. Review and clean regularly.
+  </Card>
+  
+  <Card title="Remove completed thoughts" icon="trash">
+    Timo is not a permanent archive. Remove thoughts once processed.
+  </Card>
+  
+  <Card title="Use specific searches" icon="magnifying-glass">
+    Narrow searches with labels: `timo search keyword -l work`
+  </Card>
+  
+  <Card title="Batch removals" icon="list-check">
+    Remove multiple items at once: `timo remove 1 2 3 4 5`
+  </Card>
+</CardGroup>
+
+## Best practices summary
+
+<Tip>
+**The golden rule**: Capture fast, process regularly, keep it simple.
+</Tip>
+
+- **Capture quickly**: Don't overthink when adding thoughts
+- **Use labels consistently**: Stick to a small set of meaningful labels
+- **Review regularly**: Process your thoughts daily or weekly
+- **Remove liberally**: Timo is for active thoughts, not permanent storage
+- **Create aliases**: Make common operations fast and frictionless
+- **Stay organized**: Use labels to separate contexts
+- **Export important data**: Archive thoughts before clearing
+
+<Note>
+Remember, Timo is designed to be a lightweight thought capture tool. If you find yourself needing complex features, consider whether a different tool might be better suited for that particular workflow.
+</Note>

@@ -1,0 +1,111 @@
+---
+title: 'timo list'
+description: 'Display all thoughts in your list'
+---
+
+## Description
+
+The `timo list` command prints all thoughts stored in your list to the terminal. Each thought is displayed with its unique ID, which you can use with other commands like `remove`. You can filter thoughts by label and optionally display label information.
+
+## Syntax
+
+```bash
+timo list [options]
+```
+
+## Options
+
+<ParamField path="-l, --label" type="string">
+  Filter the list to show only thoughts with the specified label. This is useful when you want to focus on a specific category of thoughts.
+</ParamField>
+
+<ParamField path="-s, --show-labels" type="boolean">
+  Display the label for each thought in the output. By default, labels are hidden unless you use this flag.
+</ParamField>
+
+## Examples
+
+### List all thoughts
+
+```bash
+timo list
+```
+
+```
+1. Buy groceries
+2. Work on quarterly report
+3. Schedule meeting with design team
+4. Review pull request #123
+5. Pick up dry cleaning
+```
+
+### List all thoughts with labels
+
+```bash
+timo list --show-labels
+```
+
+```
+1. Buy groceries [errands]
+2. Work on quarterly report [work]
+3. Schedule meeting with design team [work]
+4. Review pull request #123 [development]
+5. Pick up dry cleaning [errands]
+```
+
+### List thoughts with a specific label
+
+```bash
+timo list -l work
+```
+
+```
+2. Work on quarterly report
+3. Schedule meeting with design team
+```
+
+### List work thoughts with labels visible
+
+```bash
+timo list -l work -s
+```
+
+```
+2. Work on quarterly report [work]
+3. Schedule meeting with design team [work]
+```
+
+## Common Use Cases
+
+<CodeGroup>
+
+```bash Daily review
+# Check all your thoughts for the day
+timo list
+
+# Review work-related items
+timo list -l work
+```
+
+```bash Category management
+# View errands with labels
+timo list -l errands --show-labels
+
+# Check personal tasks
+timo list -l personal
+```
+
+```bash Full overview
+# See everything with labels for better organization
+timo list -s
+```
+
+</CodeGroup>
+
+<Note>
+  The ID numbers shown in the list output are used with the `timo remove` command to delete specific thoughts.
+</Note>
+
+<Note>
+  When filtering by label with `-l`, only thoughts that have been assigned that exact label will be displayed.
+</Note>

@@ -1,0 +1,125 @@
+---
+title: 'timo search'
+description: 'Search for thoughts containing specific keywords'
+---
+
+## Description
+
+The `timo search` command allows you to find thoughts that contain specific keywords or phrases. This is useful when you have many thoughts and need to quickly locate ones related to a particular topic. You can also filter by label and display label information in the results.
+
+## Syntax
+
+```bash
+timo search <keyword> [options]
+```
+
+## Arguments
+
+<ParamField path="keyword" type="string" required>
+  The word or phrase you want to search for in your thoughts. Multiple words will be treated as separate search terms, and thoughts containing any of them will be returned.
+</ParamField>
+
+## Options
+
+<ParamField path="-l, --label" type="string">
+  Filter the search results to only show thoughts with the specified label. This combines keyword and label filtering.
+</ParamField>
+
+<ParamField path="-s, --show-labels" type="boolean">
+  Display the label for each thought in the search results. By default, labels are hidden unless you use this flag.
+</ParamField>
+
+## Examples
+
+### Search for a keyword
+
+```bash
+timo search meeting
+```
+
+```
+Found 2 thoughts:
+
+3. Schedule meeting with design team
+7. Prepare slides for client meeting
+```
+
+### Search with labels displayed
+
+```bash
+timo search report --show-labels
+```
+
+```
+Found 2 thoughts:
+
+2. Work on quarterly report [work]
+9. Submit expense report [finance]
+```
+
+### Search within a specific label
+
+```bash
+timo search important -l work
+```
+
+```
+Found 1 thought:
+
+4. Important: Review contract before Friday
+```
+
+### Search with both label filter and display
+
+```bash
+timo search review -l development -s
+```
+
+```
+Found 2 thoughts:
+
+4. Review pull request #123 [development]
+8. Code review for new feature [development]
+```
+
+## Common Use Cases
+
+<CodeGroup>
+
+```bash Topic search
+# Find all meeting-related thoughts
+timo search meeting
+
+# Find thoughts about reports
+timo search report
+```
+
+```bash Filtered search
+# Find urgent items in work category
+timo search urgent -l work
+
+# Search for errands about groceries
+timo search groceries -l errands
+```
+
+```bash Detailed search
+# Search with full context
+timo search deadline --show-labels
+
+# Find specific work items with labels
+timo search project -l work -s
+```
+
+</CodeGroup>
+
+<Note>
+  The search is case-insensitive and will match thoughts containing the keyword anywhere in the text.
+</Note>
+
+<Note>
+  When you provide multiple words as the keyword, thoughts matching any of those words will be included in the results.
+</Note>
+
+<Warning>
+  Make sure to provide at least one keyword to search for. The command requires the keyword argument.
+</Warning>

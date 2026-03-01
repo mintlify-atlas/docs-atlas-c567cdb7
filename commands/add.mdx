@@ -1,0 +1,97 @@
+---
+title: 'timo add'
+description: 'Add a new thought to your list'
+---
+
+## Description
+
+The `timo add` command allows you to capture and save a new thought to your list. You can add thoughts with or without labels to help categorize and organize them.
+
+## Syntax
+
+```bash
+timo add <text> [options]
+```
+
+## Arguments
+
+<ParamField path="text" type="string" required>
+  The thought or idea you want to save. Multiple words will be automatically combined into a single thought.
+</ParamField>
+
+## Options
+
+<ParamField path="-l, --label" type="string">
+  Assign a label to the thought for categorization and easier filtering. Labels help you organize thoughts by topic, project, or priority.
+</ParamField>
+
+## Examples
+
+### Add a simple thought
+
+```bash
+timo add Buy groceries
+```
+
+```
+✓ Thought added successfully
+```
+
+### Add a thought with a label
+
+```bash
+timo add Buy groceries -l errands
+```
+
+```
+✓ Thought added successfully with label 'errands'
+```
+
+### Add a multi-word thought
+
+```bash
+timo add Work on quarterly report for the finance team
+```
+
+```
+✓ Thought added successfully
+```
+
+### Add a work-related thought
+
+```bash
+timo add Schedule meeting with design team --label=work
+```
+
+```
+✓ Thought added successfully with label 'work'
+```
+
+## Common Use Cases
+
+<CodeGroup>
+
+```bash Quick notes
+timo add Remember to call mom
+timo add Check email before 5pm
+```
+
+```bash Project tasks
+timo add Review pull request #123 -l development
+timo add Update API documentation -l work
+```
+
+```bash Personal reminders
+timo add Pick up dry cleaning -l errands
+timo add Book dentist appointment -l personal
+```
+
+</CodeGroup>
+
+<Note>
+  Multiple words in your thought are automatically combined, so you don't need to use quotes. For example, `timo add This is my thought` works perfectly.
+</Note>
+
+<Warning>
+  Make sure to provide at least some text for your thought. The command requires the text argument to be present.
+</Warning>

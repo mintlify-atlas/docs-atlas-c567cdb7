@@ -1,0 +1,202 @@
+---
+title: Installation
+description: Install Timo CLI using Homebrew or by building from source
+---
+
+# Install Timo
+
+Timo is a lightweight Rust CLI tool. You can install it using Homebrew or build it from source.
+
+## Prerequisites
+
+Before installing Timo, ensure you have:
+
+- macOS, Linux, or Windows with WSL
+- Terminal access
+
+<Note>
+Timo stores all data locally in a SQLite database in your home directory
+</Note>
+
+## Installation methods
+
+<Tabs>
+  <Tab title="Homebrew">
+    The easiest way to install Timo is with Homebrew:
+
+    <Steps>
+      <Step title="Install with Homebrew">
+        ```bash
+        brew tap yourusername/timo
+        brew install timo
+        ```
+      </Step>
+      <Step title="Verify installation">
+        ```bash
+        timo --version
+        ```
+        You should see:
+        ```
+        timo 0.2.4
+        ```
+      </Step>
+      <Step title="Add your first thought">
+        ```bash
+        timo add "My first thought"
+        ```
+      </Step>
+    </Steps>
+
+    <Tip>
+    Homebrew automatically handles updates. Run `brew upgrade timo` to get the latest version
+    </Tip>
+  </Tab>
+
+  <Tab title="Cargo">
+    If you have Rust installed, you can install Timo using Cargo:
+
+    <Steps>
+      <Step title="Install Rust">
+        If you don't have Rust installed, get it from [rustup.rs](https://rustup.rs):
+        ```bash
+        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+        ```
+      </Step>
+      <Step title="Install Timo">
+        ```bash
+        cargo install timo
+        ```
+        This will download, compile, and install the `timo` binary
+      </Step>
+      <Step title="Verify installation">
+        ```bash
+        timo --version
+        ```
+      </Step>
+    </Steps>
+  </Tab>
+
+  <Tab title="From source">
+    Build Timo from source for the latest development version:
+
+    <Steps>
+      <Step title="Clone the repository">
+        ```bash
+        git clone https://github.com/yourusername/timo.git
+        cd timo
+        ```
+      </Step>
+      <Step title="Build the project">
+        ```bash
+        cargo build --release
+        ```
+        The compiled binary will be in `target/release/timo`
+      </Step>
+      <Step title="Install the binary">
+        ```bash
+        cargo install --path .
+        ```
+        Or manually copy the binary:
+        ```bash
+        cp target/release/timo /usr/local/bin/
+        ```
+      </Step>
+      <Step title="Verify installation">
+        ```bash
+        timo --version
+        ```
+      </Step>
+    </Steps>
+
+    <Note>
+    Building from source requires Rust 1.70 or later
+    </Note>
+  </Tab>
+</Tabs>
+
+## Data storage location
+
+Timo stores your thoughts in a SQLite database at:
+
+```
+~/.timo/timo.db
+```
+
+The database is created automatically the first time you run Timo. No configuration needed.
+
+<Tip>
+Back up your thoughts by copying the `~/.timo/timo.db` file
+</Tip>
+
+## Upgrading Timo
+
+To upgrade to the latest version:
+
+<CodeGroup>
+```bash Homebrew
+brew upgrade timo
+```
+
+```bash Cargo
+cargo install timo --force
+```
+
+```bash From source
+git pull origin main
+cargo install --path . --force
+```
+</CodeGroup>
+
+## Uninstalling
+
+To remove Timo from your system:
+
+<CodeGroup>
+```bash Homebrew
+brew uninstall timo
+```
+
+```bash Cargo
+cargo uninstall timo
+```
+</CodeGroup>
+
+To also remove your data:
+
+```bash
+rm -rf ~/.timo
+```
+
+<Warning>
+Deleting `~/.timo` will permanently remove all your thoughts. Back up the database first if needed
+</Warning>
+
+## Troubleshooting
+
+### Command not found
+
+If you get a "command not found" error after installation:
+
+1. Make sure Cargo's bin directory is in your PATH:
+   ```bash
+   echo 'export PATH="$HOME/.cargo/bin:$PATH"' >> ~/.bashrc
+   source ~/.bashrc
+   ```
+
+2. For Zsh users, add to `~/.zshrc` instead:
+   ```bash
+   echo 'export PATH="$HOME/.cargo/bin:$PATH"' >> ~/.zshrc
+   source ~/.zshrc
+   ```
+
+### Permission denied
+
+If you encounter permission errors:
+
+```bash
+chmod +x ~/.cargo/bin/timo
+```
+
+## What's next?
+
+Now that Timo is installed, head to the [quickstart guide](/quickstart) to add your first thought.
