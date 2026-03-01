@@ -30,11 +30,11 @@ timo list
 ```
 
 ```
-1. Buy groceries
-2. Work on quarterly report
-3. Schedule meeting with design team
-4. Review pull request #123
-5. Pick up dry cleaning
+[1]: Buy groceries
+[2]: Work on quarterly report
+[3]: Schedule meeting with design team
+[4]: Review pull request #123
+[5]: Pick up dry cleaning
 ```
 
 Then remove a specific thought:
@@ -43,9 +43,7 @@ Then remove a specific thought:
 timo remove 3
 ```
 
-```
-✓ Thought #3 removed successfully
-```
+The command executes silently on success.
 
 ### Remove multiple thoughts
 
@@ -53,12 +51,7 @@ timo remove 3
 timo remove 1 4 5
 ```
 
-```
-✓ 3 thoughts removed successfully
-  - Thought #1
-  - Thought #4
-  - Thought #5
-```
+The command executes silently on success.
 
 ### Remove thoughts after searching
 
@@ -67,21 +60,15 @@ timo search meeting
 ```
 
 ```
-Found 2 thoughts:
-
-3. Schedule meeting with design team
-7. Prepare slides for client meeting
+[3]: Schedule meeting with design team
+[7]: Prepare slides for client meeting
 ```
 
 ```bash
 timo remove 3 7
 ```
 
-```
-✓ 2 thoughts removed successfully
-  - Thought #3
-  - Thought #7
-```
+The command executes silently on success.
 
 ## Common Use Cases
 

@@ -16,7 +16,7 @@ timo search <keyword> [options]
 ## Arguments
 
 <ParamField path="keyword" type="string" required>
-  The word or phrase you want to search for in your thoughts. Multiple words will be treated as separate search terms, and thoughts containing any of them will be returned.
+  The word or phrase you want to search for in your thoughts. Multiple words will be combined into a single search phrase.
 </ParamField>
 
 ## Options
@@ -38,10 +38,8 @@ timo search meeting
 ```
 
 ```
-Found 2 thoughts:
-
-3. Schedule meeting with design team
-7. Prepare slides for client meeting
+[3]: Schedule meeting with design team
+[7]: Prepare slides for client meeting
 ```
 
 ### Search with labels displayed
@@ -51,10 +49,8 @@ timo search report --show-labels
 ```
 
 ```
-Found 2 thoughts:
-
-2. Work on quarterly report [work]
-9. Submit expense report [finance]
+[2]: Work on quarterly report  #work
+[9]: Submit expense report  #finance
 ```
 
 ### Search within a specific label
@@ -64,9 +60,7 @@ timo search important -l work
 ```
 
 ```
-Found 1 thought:
-
-4. Important: Review contract before Friday
+[4]: Important: Review contract before Friday
 ```
 
 ### Search with both label filter and display
@@ -76,10 +70,8 @@ timo search review -l development -s
 ```
 
 ```
-Found 2 thoughts:
-
-4. Review pull request #123 [development]
-8. Code review for new feature [development]
+[4]: Review pull request #123  #development
+[8]: Code review for new feature  #development
 ```
 
 ## Common Use Cases
@@ -117,7 +109,7 @@ timo search project -l work -s
 </Note>
 
 <Note>
-  When you provide multiple words as the keyword, thoughts matching any of those words will be included in the results.
+  When you provide multiple words as the keyword, they are combined into a single phrase. The search will find thoughts containing that complete phrase anywhere in the text.
 </Note>
 
 <Warning>
